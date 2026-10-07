@@ -1,124 +1,57 @@
 "use client";
-
 import * as React from "react";
-import * as ToastPrimitives from "@radix-ui/react-toast";
-import { cn } from "@/lib/utils";
+import * as Toast from "@radix-ui/react-toast";
 import { X } from "lucide-react";
-
-const ToastProvider = ToastPrimitives.Provider;
-
-const ToastViewport = React.forwardRef<
-    React.ElementRef<typeof ToastPrimitives.Viewport>,
-    React.ComponentPropsWithoutRef<typeof ToastPrimitives.Viewport>
->(({ className, ...props }, ref) => (
-    <ToastPrimitives.Viewport
-        ref={ref}
-        className={cn(
-            "fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]",
-            className
-        )}
-        {...props}
-    />
-));
-ToastViewport.displayName = ToastPrimitives.Viewport.displayName;
-
-const Toast = React.forwardRef<
-    React.ElementRef<typeof ToastPrimitives.Root>,
-    React.ComponentPropsWithoutRef<typeof ToastPrimitives.Root> & {
-        variant?: "default" | "destructive";
-    }
->(({ className, variant = "default", ...props }, ref) => (
-    <ToastPrimitives.Root
-        ref={ref}
-        className={cn(
-            "group pointer-events-auto relative flex w-full items-center justify-between space-x-4 overflow-hidden rounded-lg border p-4 shadow-lg transition-all",
-            variant === "default" && "border-border bg-card text-card-foreground",
-            variant === "destructive" && "border-destructive/50 bg-destructive text-destructive-foreground",
-            className
-        )}
-        {...props}
-    />
-));
-Toast.displayName = ToastPrimitives.Root.displayName;
-
-const ToastClose = React.forwardRef<
-    React.ElementRef<typeof ToastPrimitives.Close>,
-    React.ComponentPropsWithoutRef<typeof ToastPrimitives.Close>
->(({ className, ...props }, ref) => (
-    <ToastPrimitives.Close
-        ref={ref}
-        className={cn(
-            "absolute right-2 top-2 rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none group-hover:opacity-100",
-            className
-        )}
-        toast-close=""
-        {...props}
-    >
-        <X className="h-4 w-4" />
-    </ToastPrimitives.Close>
-));
-ToastClose.displayName = ToastPrimitives.Close.displayName;
-
-const ToastTitle = React.forwardRef<
-    React.ElementRef<typeof ToastPrimitives.Title>,
-    React.ComponentPropsWithoutRef<typeof ToastPrimitives.Title>
->(({ className, ...props }, ref) => (
-    <ToastPrimitives.Title ref={ref} className={cn("text-sm font-semibold", className)} {...props} />
-));
-ToastTitle.displayName = ToastPrimitives.Title.displayName;
-
-const ToastDescription = React.forwardRef<
-    React.ElementRef<typeof ToastPrimitives.Description>,
-    React.ComponentPropsWithoutRef<typeof ToastPrimitives.Description>
->(({ className, ...props }, ref) => (
-    <ToastPrimitives.Description ref={ref} className={cn("text-sm opacity-90", className)} {...props} />
-));
-ToastDescription.displayName = ToastPrimitives.Description.displayName;
-
-// --- Toast hook & Toaster ---
-type ToastData = {
-    id: string;
-    title?: string;
-    description?: string;
-    variant?: "default" | "destructive";
+type Notice = {
+  id: number;
+  title?: string;
+  description?: string;
+  variant?: "default" | "destructive";
 };
-
-let toastListeners: Array<(t: ToastData) => void> = [];
-let toastCount = 0;
-
-export function toast(opts: Omit<ToastData, "id">) {
-    const t = { ...opts, id: String(++toastCount) };
-    toastListeners.forEach((fn) => fn(t));
+const listeners = new Set<(notice: Notice) => void>();
+let counter = 0;
+export function toast(options: Omit<Notice, "id">) {
+  const notice = { ...options, id: ++counter };
+  listeners.forEach((fn) => fn(notice));
 }
-
 export function Toaster() {
-    const [toasts, setToasts] = React.useState<ToastData[]>([]);
-
-    React.useEffect(() => {
-        const handler = (t: ToastData) => {
-            setToasts((prev) => [...prev, t]);
-            setTimeout(() => {
-                setToasts((prev) => prev.filter((x) => x.id !== t.id));
-            }, 4000);
-        };
-        toastListeners.push(handler);
-        return () => {
-            toastListeners = toastListeners.filter((fn) => fn !== handler);
-        };
-    }, []);
-
-    return (
-        <ToastProvider>
-            {toasts.map((t) => (
-                <Toast key={t.id} variant={t.variant}>
-                    <div className="grid gap-1">
-                        {t.title && <ToastTitle>{t.title}</ToastTitle>}
-                        {t.description && <ToastDescription>{t.description}</ToastDescription>}
-                    </div>
-                    <ToastClose />
-                </Toast>
-            ))}
-            <ToastViewport />
-        </ToastProvider>
-    );
+  const [notices, setNotices] = React.useState<Notice[]>([]);
+  React.useEffect(() => {
+    const listener = (notice: Notice) =>
+      setNotices((previous) => [...previous.slice(-3), notice]);
+    listeners.add(listener);
+    return () => {
+      listeners.delete(listener);
+    };
+  }, []);
+  return (
+    <Toast.Provider duration={7000}>
+      {notices.map((notice) => (
+        <Toast.Root
+          key={notice.id}
+          className="toast"
+          onOpenChange={(open) => {
+            if (!open)
+              setNotices((previous) =>
+                previous.filter((item) => item.id !== notice.id),
+              );
+          }}
+        >
+          <Toast.Title className="toast-title">{notice.title}</Toast.Title>
+          {notice.description && (
+            <Toast.Description className="toast-description">
+              {notice.description}
+            </Toast.Description>
+          )}
+          <Toast.Close
+            className="toast-close"
+            aria-label="Dismiss notification"
+          >
+            <X size={16} />
+          </Toast.Close>
+        </Toast.Root>
+      ))}
+      <Toast.Viewport className="toast-viewport" />
+    </Toast.Provider>
+  );
 }

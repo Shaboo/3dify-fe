@@ -1,276 +1,322 @@
 "use client";
-
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Plus, X } from "lucide-react";
+import * as Dialog from "@radix-ui/react-dialog";
+import { Workspace, PageTitle } from "@/components/shell";
 import { useAuth } from "@/lib/auth-context";
-import { plansApi, type Plan } from "@/lib/api";
+import { plansApi, Plan, errorMessage, formatPrice } from "@/lib/api";
 import { toast } from "@/components/ui/toaster";
-import {
-    Plus, Edit2, Trash2, Loader2, Save, X, Shield
-} from "lucide-react";
-import Link from "next/link";
-
-interface EditingPlan extends Partial<Plan> {
-    isNew?: boolean;
-}
-
-export default function AdminPage() {
-    const { user, isLoading } = useAuth();
-    const router = useRouter();
-
-    const [plans, setPlans] = useState<Plan[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [editing, setEditing] = useState<EditingPlan | null>(null);
-    const [saving, setSaving] = useState(false);
-    const [deletingId, setDeletingId] = useState<string | null>(null);
-
-    useEffect(() => {
-        if (!isLoading && (!user || !user.isAdmin)) {
-            router.replace("/dashboard");
+function Admin() {
+  const { user } = useAuth();
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [revision, setRevision] = useState(0);
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<Plan | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [deactivating, setDeactivating] = useState<Plan | null>(null);
+  useEffect(() => {
+    if (!user?.isAdmin) return;
+    let alive = true;
+    plansApi
+      .listAll(user.token)
+      .then((plans) => {
+        if (alive) {
+          setPlans(plans.sort((a, b) => a.sortOrder - b.sortOrder));
+          setError("");
         }
-    }, [user, isLoading, router]);
-
-    useEffect(() => {
-        if (!user?.isAdmin) return;
-        plansApi.listAll(user.token)
-            .then(setPlans)
-            .catch(() => toast({ title: "Failed to load plans", variant: "destructive" }))
-            .finally(() => setLoading(false));
-    }, [user]);
-
-    const handleSave = async () => {
-        if (!user || !editing) return;
-        setSaving(true);
-        try {
-            if (editing.isNew) {
-                const created = await plansApi.create(user.token, {
-                    name: editing.name!,
-                    displayName: editing.displayName!,
-                    description: editing.description ?? null,
-                    priceCents: editing.priceCents ?? 0,
-                    currency: editing.currency ?? "usd",
-                    rateLimitRpm: editing.rateLimitRpm ?? 10,
-                    monthlyQuota: editing.monthlyQuota ?? 100,
-                    sortOrder: editing.sortOrder ?? 99,
-                    stripePriceId: null,
-                });
-                setPlans((p) => [...p, created]);
-                toast({ title: "Plan created" });
-            } else {
-                const updated = await plansApi.update(user.token, editing.id!, {
-                    displayName: editing.displayName,
-                    description: editing.description,
-                    priceCents: editing.priceCents,
-                    rateLimitRpm: editing.rateLimitRpm,
-                    monthlyQuota: editing.monthlyQuota,
-                    sortOrder: editing.sortOrder,
-                });
-                setPlans((p) => p.map((pl) => pl.id === updated.id ? updated : pl));
-                toast({ title: "Plan updated" });
-            }
-            setEditing(null);
-        } catch (err: any) {
-            toast({ title: "Save failed", description: err.message, variant: "destructive" });
-        } finally {
-            setSaving(false);
-        }
+      })
+      .catch((error) => {
+        if (alive) setError(errorMessage(error));
+      })
+      .finally(() => {
+        if (alive) setLoading(false);
+      });
+    return () => {
+      alive = false;
     };
-
-    const handleDeactivate = async (id: string) => {
-        if (!user) return;
-        setDeletingId(id);
-        try {
-            await plansApi.deactivate(user.token, id);
-            setPlans((p) => p.map((pl) => pl.id === id ? { ...pl, isActive: false } : pl));
-            toast({ title: "Plan deactivated" });
-        } catch (err: any) {
-            toast({ title: "Failed", description: err.message, variant: "destructive" });
-        } finally {
-            setDeletingId(null);
-        }
+  }, [user, revision]);
+  async function save(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!user || busy) return;
+    const data = new FormData(event.currentTarget);
+    const values = {
+      displayName: String(data.get("displayName")).trim(),
+      description: String(data.get("description")).trim(),
+      priceCents: Number(data.get("priceCents")),
+      rateLimitRpm: Number(data.get("rateLimitRpm")),
+      monthlyQuota: Number(data.get("monthlyQuota")),
+      sortOrder: Number(data.get("sortOrder")),
     };
-
-    if (isLoading || loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-        );
+    setBusy(true);
+    setError("");
+    try {
+      if (editing) await plansApi.update(user.token, editing.id, values);
+      else
+        await plansApi.create(user.token, {
+          ...values,
+          name: String(data.get("name")).trim(),
+          currency: String(data.get("currency")).toLowerCase(),
+          stripePriceId: null,
+        });
+      setOpen(false);
+      setRevision((value) => value + 1);
+      toast({ title: editing ? "Plan updated" : "Plan created" });
+    } catch (error) {
+      setError(errorMessage(error));
+    } finally {
+      setBusy(false);
     }
-
-    return (
-        <div className="min-h-screen p-6 max-w-5xl mx-auto">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-3">
-                    <Shield className="w-6 h-6 text-primary" />
-                    <div>
-                        <h1 className="text-xl font-bold">Admin Panel</h1>
-                        <p className="text-xs text-muted-foreground">Plan Management</p>
-                    </div>
-                </div>
-                <div className="flex gap-3">
-                    <Link href="/dashboard" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                        ← Dashboard
-                    </Link>
-                    <button
-                        onClick={() => setEditing({ isNew: true, currency: "usd", sortOrder: 99 })}
-                        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
-                    >
-                        <Plus className="w-4 h-4" /> New Plan
-                    </button>
-                </div>
-            </div>
-
-            {/* Plans table */}
-            <div className="glass rounded-2xl overflow-hidden">
-                <table className="w-full text-sm">
-                    <thead>
-                        <tr className="border-b border-border">
-                            <th className="text-left px-4 py-3 font-medium text-muted-foreground">Name</th>
-                            <th className="text-left px-4 py-3 font-medium text-muted-foreground">Price</th>
-                            <th className="text-left px-4 py-3 font-medium text-muted-foreground">Rate Limit</th>
-                            <th className="text-left px-4 py-3 font-medium text-muted-foreground">Monthly Quota</th>
-                            <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status</th>
-                            <th className="px-4 py-3" />
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {plans.map((plan) => (
-                            <tr key={plan.id} className="border-b border-border/50 hover:bg-white/2 transition-colors">
-                                <td className="px-4 py-3">
-                                    <p className="font-medium">{plan.displayName || plan.name}</p>
-                                    <p className="text-xs text-muted-foreground font-mono">{plan.name}</p>
-                                </td>
-                                <td className="px-4 py-3">
-                                    {plan.priceCents === 0 ? "Free" : `$${(plan.priceCents / 100).toFixed(0)}/mo`}
-                                </td>
-                                <td className="px-4 py-3">{plan.rateLimitRpm} rpm</td>
-                                <td className="px-4 py-3">{plan.monthlyQuota.toLocaleString()}</td>
-                                <td className="px-4 py-3">
-                                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${plan.isActive ? "bg-emerald-500/10 text-emerald-400" : "bg-secondary text-muted-foreground"}`}>
-                                        {plan.isActive ? "Active" : "Inactive"}
-                                    </span>
-                                </td>
-                                <td className="px-4 py-3">
-                                    <div className="flex items-center gap-2 justify-end">
-                                        <button
-                                            onClick={() => setEditing({ ...plan })}
-                                            className="p-1.5 rounded-lg hover:bg-white/5 text-muted-foreground hover:text-foreground transition-colors"
-                                        >
-                                            <Edit2 className="w-4 h-4" />
-                                        </button>
-                                        {plan.isActive && (
-                                            <button
-                                                onClick={() => handleDeactivate(plan.id)}
-                                                disabled={deletingId === plan.id}
-                                                className="p-1.5 rounded-lg hover:bg-red-500/10 text-muted-foreground hover:text-red-400 transition-colors disabled:opacity-50"
-                                            >
-                                                {deletingId === plan.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                                            </button>
-                                        )}
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-
-            {/* Edit/Create drawer */}
-            {editing && (
-                <div className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-50 p-4" onClick={() => setEditing(null)}>
-                    <div className="glass rounded-2xl w-full max-w-lg p-6 animate-fade-in" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-between mb-5">
-                            <h2 className="font-bold">{editing.isNew ? "Create Plan" : "Edit Plan"}</h2>
-                            <button onClick={() => setEditing(null)} className="p-1.5 hover:bg-white/5 rounded-lg text-muted-foreground">
-                                <X className="w-4 h-4" />
-                            </button>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3">
-                            {editing.isNew && (
-                                <div className="col-span-2">
-                                    <label className="block text-xs text-muted-foreground mb-1">Internal Name (slug)</label>
-                                    <input
-                                        value={editing.name ?? ""}
-                                        onChange={(e) => setEditing((prev) => ({ ...prev!, name: e.target.value }))}
-                                        placeholder="e.g. starter"
-                                        className="w-full px-3 py-2 rounded-lg bg-secondary border border-border text-sm outline-none focus:border-primary"
-                                    />
-                                </div>
-                            )}
-                            <div className="col-span-2">
-                                <label className="block text-xs text-muted-foreground mb-1">Display Name</label>
-                                <input
-                                    value={editing.displayName ?? ""}
-                                    onChange={(e) => setEditing((prev) => ({ ...prev!, displayName: e.target.value }))}
-                                    className="w-full px-3 py-2 rounded-lg bg-secondary border border-border text-sm outline-none focus:border-primary"
-                                />
-                            </div>
-                            <div className="col-span-2">
-                                <label className="block text-xs text-muted-foreground mb-1">Description</label>
-                                <textarea
-                                    value={editing.description ?? ""}
-                                    onChange={(e) => setEditing((prev) => ({ ...prev!, description: e.target.value }))}
-                                    rows={2}
-                                    className="w-full px-3 py-2 rounded-lg bg-secondary border border-border text-sm outline-none focus:border-primary resize-none"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs text-muted-foreground mb-1">Price (cents)</label>
-                                <input
-                                    type="number"
-                                    value={editing.priceCents ?? 0}
-                                    onChange={(e) => setEditing((prev) => ({ ...prev!, priceCents: Number(e.target.value) }))}
-                                    className="w-full px-3 py-2 rounded-lg bg-secondary border border-border text-sm outline-none focus:border-primary"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs text-muted-foreground mb-1">Rate Limit (rpm)</label>
-                                <input
-                                    type="number"
-                                    value={editing.rateLimitRpm ?? 10}
-                                    onChange={(e) => setEditing((prev) => ({ ...prev!, rateLimitRpm: Number(e.target.value) }))}
-                                    className="w-full px-3 py-2 rounded-lg bg-secondary border border-border text-sm outline-none focus:border-primary"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs text-muted-foreground mb-1">Monthly Quota</label>
-                                <input
-                                    type="number"
-                                    value={editing.monthlyQuota ?? 100}
-                                    onChange={(e) => setEditing((prev) => ({ ...prev!, monthlyQuota: Number(e.target.value) }))}
-                                    className="w-full px-3 py-2 rounded-lg bg-secondary border border-border text-sm outline-none focus:border-primary"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-xs text-muted-foreground mb-1">Sort Order</label>
-                                <input
-                                    type="number"
-                                    value={editing.sortOrder ?? 99}
-                                    onChange={(e) => setEditing((prev) => ({ ...prev!, sortOrder: Number(e.target.value) }))}
-                                    className="w-full px-3 py-2 rounded-lg bg-secondary border border-border text-sm outline-none focus:border-primary"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="flex gap-3 mt-5 justify-end">
-                            <button onClick={() => setEditing(null)} className="px-4 py-2 text-sm rounded-lg border border-border hover:bg-white/5 transition-colors">
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleSave}
-                                disabled={saving}
-                                className="flex items-center gap-2 px-4 py-2 text-sm rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
-                            >
-                                {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                                Save
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+  }
+  async function deactivate() {
+    if (!user || !deactivating || busy) return;
+    setBusy(true);
+    try {
+      await plansApi.deactivate(user.token, deactivating.id);
+      setDeactivating(null);
+      setRevision((value) => value + 1);
+    } catch (error) {
+      setError(errorMessage(error));
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <>
+      <PageTitle
+        title="Plan administration"
+        description="Manage the plans available to website users. Admin access is enforced by the backend."
+        action={
+          <button
+            className="btn"
+            onClick={() => {
+              setEditing(null);
+              setOpen(true);
+              setError("");
+            }}
+          >
+            Create plan <Plus size={16} />
+          </button>
+        }
+      />
+      {error && !open && (
+        <div className="note error" role="alert" style={{ marginBottom: 24 }}>
+          {error}
+          <button
+            className="btn secondary small"
+            onClick={() => setRevision((value) => value + 1)}
+          >
+            Reload plans
+          </button>
         </div>
-    );
+      )}
+      {loading ? (
+        <p role="status">Loading plans…</p>
+      ) : (
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Plan</th>
+                <th>Price / month</th>
+                <th>Requests / minute</th>
+                <th>Monthly quota</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {plans.map((plan) => (
+                <tr key={plan.id}>
+                  <td>
+                    <strong>{plan.displayName || plan.name}</strong>
+                    <p className="muted">{plan.name}</p>
+                  </td>
+                  <td>{formatPrice(plan.priceCents, plan.currency)}</td>
+                  <td>{plan.rateLimitRpm}</td>
+                  <td>{plan.monthlyQuota.toLocaleString()}</td>
+                  <td>
+                    <span className="status">
+                      {plan.isActive ? "Active" : "Inactive"}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="row">
+                      <button
+                        className="btn secondary small"
+                        onClick={() => {
+                          setEditing(plan);
+                          setOpen(true);
+                          setError("");
+                        }}
+                      >
+                        Edit
+                      </button>
+                      {plan.isActive && (
+                        <button
+                          className="btn secondary small"
+                          onClick={() => setDeactivating(plan)}
+                        >
+                          Deactivate
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <Dialog.Root
+        open={open}
+        onOpenChange={(value) => {
+          if (!busy) setOpen(value);
+        }}
+      >
+        <Dialog.Portal>
+          <Dialog.Overlay className="dialog-overlay" />
+          <Dialog.Content className="dialog-content">
+            <div className="panel-head">
+              <Dialog.Title asChild>
+                <h2>{editing ? "Edit plan" : "Create plan"}</h2>
+              </Dialog.Title>
+              <Dialog.Close className="icon-btn" aria-label="Close">
+                <X size={17} />
+              </Dialog.Close>
+            </div>
+            <Dialog.Description className="muted">
+              Changes update the backend’s website plan catalog.
+            </Dialog.Description>
+            <form onSubmit={save} className="stack">
+              {!editing && (
+                <div className="form-grid">
+                  <div className="field">
+                    <label htmlFor="plan-name">Internal name</label>
+                    <input
+                      id="plan-name"
+                      name="name"
+                      required
+                      pattern="[a-z0-9-]+"
+                    />
+                  </div>
+                  <div className="field">
+                    <label htmlFor="currency">Currency</label>
+                    <input
+                      id="currency"
+                      name="currency"
+                      defaultValue="usd"
+                      required
+                      pattern="[A-Za-z]{3}"
+                      maxLength={3}
+                    />
+                  </div>
+                </div>
+              )}
+              <div className="field">
+                <label htmlFor="display-name">Display name</label>
+                <input
+                  id="display-name"
+                  name="displayName"
+                  defaultValue={editing?.displayName || ""}
+                  required
+                />
+              </div>
+              <div className="field">
+                <label htmlFor="description">Description</label>
+                <textarea
+                  id="description"
+                  name="description"
+                  defaultValue={editing?.description || ""}
+                />
+              </div>
+              <div className="form-grid">
+                {[
+                  {
+                    name: "priceCents",
+                    label: "Monthly price in cents",
+                    value: editing?.priceCents || 0,
+                    min: 0,
+                  },
+                  {
+                    name: "rateLimitRpm",
+                    label: "API requests per minute",
+                    value: editing?.rateLimitRpm || 10,
+                    min: 1,
+                  },
+                  {
+                    name: "monthlyQuota",
+                    label: "Monthly job quota",
+                    value: editing?.monthlyQuota || 100,
+                    min: 0,
+                  },
+                  {
+                    name: "sortOrder",
+                    label: "Display order",
+                    value: editing?.sortOrder || 0,
+                    min: 0,
+                  },
+                ].map((field) => (
+                  <div className="field" key={field.name}>
+                    <label htmlFor={field.name}>{field.label}</label>
+                    <input
+                      id={field.name}
+                      name={field.name}
+                      type="number"
+                      min={field.min}
+                      step={1}
+                      defaultValue={field.value}
+                      required
+                    />
+                  </div>
+                ))}
+              </div>
+              {error && (
+                <div className="note error" role="alert">
+                  {error}
+                </div>
+              )}
+              <button className="btn" disabled={busy}>
+                {busy ? "Saving…" : "Save plan"}
+              </button>
+            </form>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+      <Dialog.Root
+        open={!!deactivating}
+        onOpenChange={(value) => {
+          if (!value && !busy) setDeactivating(null);
+        }}
+      >
+        <Dialog.Portal>
+          <Dialog.Overlay className="dialog-overlay" />
+          <Dialog.Content className="dialog-content">
+            <Dialog.Title asChild>
+              <h2>
+                Deactivate {deactivating?.displayName || deactivating?.name}?
+              </h2>
+            </Dialog.Title>
+            <Dialog.Description className="muted" style={{ marginTop: 14 }}>
+              This plan will be removed from the public plan catalog.
+            </Dialog.Description>
+            <div className="row" style={{ marginTop: 24 }}>
+              <button className="btn" disabled={busy} onClick={deactivate}>
+                {busy ? "Deactivating…" : "Deactivate plan"}
+              </button>
+              <Dialog.Close className="btn secondary">Cancel</Dialog.Close>
+            </div>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
+    </>
+  );
+}
+export default function AdminPage() {
+  return (
+    <Workspace admin>
+      <Admin />
+    </Workspace>
+  );
 }

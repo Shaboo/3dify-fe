@@ -1,111 +1,117 @@
-"use client";
-
 import Link from "next/link";
-import { ArrowLeft, Box } from "lucide-react";
-
-export default function DocsPage() {
-    return (
-        <div className="min-h-screen bg-background text-foreground pb-20">
-            {/* Nav */}
-            <nav className="border-b border-border/50 bg-background/80 backdrop-blur-lg sticky top-0 z-50">
-                <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
-                    <Link href="/" className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-                        <ArrowLeft className="w-4 h-4" /> Back to Home
-                    </Link>
-                    <div className="text-sm font-bold gradient-text">Omni3D Docs</div>
-                </div>
-            </nav>
-
-            {/* Content */}
-            <main className="max-w-3xl mx-auto px-4 pt-12 animate-fade-in">
-                <h1 className="text-4xl font-extrabold mb-4 tracking-tight">API Reference</h1>
-                <p className="text-lg text-muted-foreground mb-12">
-                    Integrate state-of-the-art 3D model generation into your applications.
+import { Header, Footer, PageTitle } from "@/components/shell";
+export default function Docs() {
+  return (
+    <>
+      <Header />
+      <main className="public-page" style={{ maxWidth: 1150 }}>
+        <PageTitle
+          title="Build with 3dify."
+          description="Submit photos, follow a task, and retrieve the generated model through the backend API."
+        />
+        <div className="stack">
+          <section className="panel">
+            <div className="step-title">
+              <span className="section-number">01</span>
+              <div>
+                <h2>Get an API key</h2>
+                <p>
+                  Activate a website subscription, then create a key in your
+                  workspace.
                 </p>
-
-                <div className="space-y-16">
-                    {/* Auth Section */}
-                    <section>
-                        <h2 className="text-2xl font-bold border-b border-border/50 pb-2 mb-6">Authentication</h2>
-                        <p className="text-sm text-muted-foreground mb-4">
-                            Omni3D uses <strong className="text-foreground">API Keys</strong> to authenticate requests. You can generate and manage your API keys from the <Link href="/dashboard/api-keys" className="text-primary hover:underline">Dashboard</Link>.
-                        </p>
-                        <div className="glass rounded-xl p-4 border-l-4 border-l-yellow-500/50 mb-4 bg-yellow-500/5">
-                            <p className="text-sm text-yellow-500/90 font-medium">Important</p>
-                            <p className="text-xs text-muted-foreground mt-1">Keep your API keys secure. Always make requests to Omni3D from your secure backend servers, never from client-side code.</p>
-                        </div>
-                        <p className="text-sm text-muted-foreground mb-2">All API requests must include your API key in the header:</p>
-                        <pre className="bg-secondary/30 border border-border/50 p-4 rounded-xl text-xs overflow-x-auto text-primary/90 font-mono">
-                            X-API-KEY: omni_pk_1234567890abcdef...
-                        </pre>
-                    </section>
-
-                    {/* Generate Model Section */}
-                    <section>
-                        <h2 className="text-2xl font-bold border-b border-border/50 pb-2 mb-6">Generate 3D Model</h2>
-                        <div className="flex items-center gap-3 mb-4">
-                            <span className="bg-emerald-500/10 text-emerald-500 px-2.5 py-1 rounded text-xs font-bold font-mono">POST</span>
-                            <code className="text-sm font-mono text-muted-foreground">/api/v1/generate</code>
-                        </div>
-                        <p className="text-sm text-muted-foreground mb-6">
-                            Submit exactly two images (e.g., front and back) as a <code className="text-foreground bg-secondary/50 px-1 py-0.5 rounded">multipart/form-data</code> request. The process is asynchronous.
-                        </p>
-
-                        <h3 className="text-sm font-semibold mb-3 tracking-wide uppercase text-muted-foreground">Request Example (cURL)</h3>
-                        <pre className="bg-secondary/30 border border-border/50 p-4 rounded-xl text-xs overflow-x-auto text-primary/90 font-mono mb-8">
-                            {`curl -X POST https://api.omni3d.com/api/v1/generate \\
-  -H "X-API-KEY: your_api_key_here" \\
-  -F "image1=@/path/to/front.jpg" \\
-  -F "image2=@/path/to/back.jpg"`}
-                        </pre>
-
-                        <h3 className="text-sm font-semibold mb-3 tracking-wide uppercase text-muted-foreground">Response (202 Accepted)</h3>
-                        <pre className="bg-secondary/30 border border-border/50 p-4 rounded-xl text-xs overflow-x-auto text-primary/90 font-mono">
-                            {`{
-  "jobId": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-  "status": "PENDING"
-}`}
-                        </pre>
-                    </section>
-
-                    {/* Check Status Section */}
-                    <section>
-                        <h2 className="text-2xl font-bold border-b border-border/50 pb-2 mb-6">Retrieve Job Status</h2>
-                        <div className="flex items-center gap-3 mb-4">
-                            <span className="bg-blue-500/10 text-blue-500 px-2.5 py-1 rounded text-xs font-bold font-mono">GET</span>
-                            <code className="text-sm font-mono text-muted-foreground">/api/v1/jobs/&lcub;jobId&rcub;</code>
-                        </div>
-                        <p className="text-sm text-muted-foreground mb-6">
-                            Poll this endpoint to check if your model is ready. Once <code className="text-foreground">status === "SUCCESS"</code>, you will receive the download URLs.
-                        </p>
-
-                        <h3 className="text-sm font-semibold mb-3 tracking-wide uppercase text-muted-foreground">Response Example (Success)</h3>
-                        <pre className="bg-secondary/30 border border-border/50 p-4 rounded-xl text-xs overflow-x-auto text-primary/90 font-mono">
-                            {`{
-  "jobId": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-  "status": "SUCCESS",
-  "outputGlbUrl": "https://cdn.omni3d.com/outputs/.../model.glb",
-  "outputUsdzUrl": "https://cdn.omni3d.com/outputs/.../model.usdz",
-  "createdAt": "2026-02-22T12:00:00Z",
-  "completedAt": "2026-02-22T12:00:05Z"
-}`}
-                        </pre>
-                    </section>
-
-                    {/* Webhooks Section */}
-                    <section>
-                        <h2 className="text-2xl font-bold border-b border-border/50 pb-2 mb-6 flex items-center gap-2">
-                            <Box className="w-5 h-5" /> Webhooks (Recommended)
-                        </h2>
-                        <p className="text-sm text-muted-foreground mb-4">
-                            Instead of polling, configure a Webhook URL in your dashboard. Omni3D will POST the job status payload to your server the moment generation is complete.
-                        </p>
-                        <p className="text-sm text-muted-foreground mb-6">
-                            Your endpoint should return an HTTP <code className="text-foreground">2xx</code> status immediately upon receipt to prevent retries.
-                        </p>
-                    </section>
-                </div>
-            </main>
+              </div>
+            </div>
+            <Link href="/dashboard/keys" className="text-link">
+              Manage API keys
+            </Link>
+            <p className="muted" style={{ marginTop: 16 }}>
+              Send your key in the X-API-KEY header. Keep it on your server.
+              Browser account routes use a Bearer token instead.
+            </p>
+          </section>
+          <section className="panel">
+            <div className="step-title">
+              <span className="section-number">02</span>
+              <div>
+                <h2>Submit your photos</h2>
+                <p>POST /api/v1/generate · multipart/form-data</p>
+              </div>
+            </div>
+            <pre className="code">{`curl -X POST http://localhost:8080/api/v1/generate \\\n  -H "X-API-KEY: YOUR_API_KEY" \\\n  -F "images=@front.jpg" \\\n  -F "images=@back.jpg"`}</pre>
+            <p className="muted" style={{ marginTop: 16 }}>
+              Use repeated images parts for one or more photos. Photo limits
+              depend on the configured provider. A successful submission returns
+              HTTP 202 with jobId and status.
+            </p>
+            <pre
+              className="code"
+              style={{ marginTop: 16 }}
+            >{`{ "jobId": "YOUR_JOB_ID", "status": "PENDING" }`}</pre>
+          </section>
+          <section className="panel">
+            <div className="step-title">
+              <span className="section-number">03</span>
+              <div>
+                <h2>Follow the task</h2>
+                <p>GET /api/v1/jobs/YOUR_JOB_ID</p>
+              </div>
+            </div>
+            <pre className="code">{`curl http://localhost:8080/api/v1/jobs/YOUR_JOB_ID \\\n  -H "X-API-KEY: YOUR_API_KEY"`}</pre>
+            <p className="muted" style={{ marginTop: 16 }}>
+              Poll within your plan’s request limit. Status moves from PENDING
+              to PROCESSING, then SUCCESS or FAILED. Successful jobs expose
+              outputGlbUrl and outputUsdzUrl when available. Failed jobs expose
+              errorMessage.
+            </p>
+            <p className="muted" style={{ marginTop: 12 }}>
+              If a submission response is lost, check GET /api/v1/jobs before
+              submitting again. The generation endpoint does not currently
+              guarantee duplicate prevention.
+            </p>
+          </section>
+          <section className="panel">
+            <h2>More endpoints</h2>
+            <div className="table-wrap" style={{ marginTop: 16 }}>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Method</th>
+                    <th>Path</th>
+                    <th>Purpose</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>GET</td>
+                    <td>/api/v1/jobs</td>
+                    <td>Jobs submitted using this key</td>
+                  </tr>
+                  <tr>
+                    <td>GET</td>
+                    <td>/api/v1/jobs/YOUR_JOB_ID/history</td>
+                    <td>Status history</td>
+                  </tr>
+                  <tr>
+                    <td>GET</td>
+                    <td>/dashboard/generation-options</td>
+                    <td>
+                      Current provider’s photo limits; Bearer token required
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p className="muted" style={{ marginTop: 20 }}>
+              Configure delivery of job updates in{" "}
+              <Link href="/dashboard/webhooks" className="text-link">
+                Webhooks
+              </Link>
+              .
+            </p>
+          </section>
         </div>
-    );
+      </main>
+      <Footer />
+    </>
+  );
 }

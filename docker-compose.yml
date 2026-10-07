@@ -1,16 +1,7 @@
 services:
-  dashboard:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: omni3d-dashboard
+  website:
+    build: .
     ports:
       - "3000:3000"
     environment:
-      NEXT_PUBLIC_API_URL: http://localhost:8080
-    networks:
-      - omni3d-network
-
-networks:
-  omni3d-network:
-    driver: bridge
+      BACKEND_URL: http://host.docker.internal:8080

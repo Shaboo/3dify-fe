@@ -1,29 +1,25 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { Toaster } from "@/components/ui/toaster";
-
-const inter = Inter({ subsets: ["latin"] });
-
 export const metadata: Metadata = {
-    title: "Omni3D - Admin Dashboard",
-    description: "Manage your 3D generation API keys, monitor jobs, and track usage.",
+  title: { default: "3dify — Photos into 3D", template: "%s · 3dify" },
+  description:
+    "Generate 3D models from your photos. Follow jobs and download GLB and USDZ files.",
 };
-
 export default function RootLayout({
-    children,
+  children,
 }: {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }) {
-    return (
-        <html lang="en" className="dark">
-            <body className={inter.className}>
-                <AuthProvider>
-                    {children}
-                    <Toaster />
-                </AuthProvider>
-            </body>
-        </html>
-    );
+  return (
+    <html lang="en">
+      <body>
+        <AuthProvider>
+          {children}
+          <Toaster />
+        </AuthProvider>
+      </body>
+    </html>
+  );
 }

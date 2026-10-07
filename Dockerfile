@@ -1,19 +1,17 @@
-# Build stage
-FROM node:20-alpine AS build
+FROM node:24-alpine AS build
 WORKDIR /app
-ARG BACKEND_URL=http://host.docker.internal:8080
-ENV BACKEND_URL=$BACKEND_URL
-COPY package.json ./
-RUN npm install
+COPY package.json package-lock.json ./
+RUN npm ci
 COPY . .
 RUN npm run build
 
-# Runtime stage
-FROM node:20-alpine
+FROM node:24-alpine
 WORKDIR /app
+ENV NODE_ENV=production
+ENV BACKEND_URL=http://host.docker.internal:8080
 COPY --from=build /app/.next/standalone ./
 COPY --from=build /app/.next/static ./.next/static
 EXPOSE 3000
 ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
+ENV HOSTNAME=0.0.0.0
 CMD ["node", "server.js"]

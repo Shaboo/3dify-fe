@@ -1,59 +1,110 @@
 "use client";
-
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
-
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  useCallback,
+} from "react";
+import { toast } from "@/components/ui/toaster";
 interface User {
-    token: string;
-    userId: string;
-    email: string;
-    isAdmin: boolean;
+  token: string;
+  userId: string;
+  email: string;
+  isAdmin: boolean;
 }
-
-interface AuthContextType {
-    user: User | null;
-    login: (token: string, userId: string, email: string, isAdmin: boolean) => void;
-    logout: () => void;
-    isLoading: boolean;
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState<User | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-
-    useEffect(() => {
-        const stored = localStorage.getItem("omni3d_auth");
-        if (stored) {
-            try {
-                setUser(JSON.parse(stored));
-            } catch {
-                localStorage.removeItem("omni3d_auth");
-            }
-        }
-        setIsLoading(false);
-    }, []);
-
-    const login = useCallback((token: string, userId: string, email: string, isAdmin: boolean) => {
-        const u: User = { token, userId, email, isAdmin };
-        setUser(u);
-        localStorage.setItem("omni3d_auth", JSON.stringify(u));
-    }, []);
-
-    const logout = useCallback(() => {
-        setUser(null);
-        localStorage.removeItem("omni3d_auth");
-    }, []);
-
-    return (
-        <AuthContext.Provider value={{ user, login, logout, isLoading }}>
-            {children}
-        </AuthContext.Provider>
+const AuthContext = createContext<
+  | {
+      user: User | null;
+      isLoading: boolean;
+      login: (
+        token: string,
+        userId: string,
+        email: string,
+        isAdmin: boolean,
+      ) => void;
+      logout: () => void;
+    }
+  | undefined
+>(undefined);
+const KEY = "omni3d_auth";
+function validSession(user: User) {
+  try {
+    const payload = JSON.parse(
+      atob(user.token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")),
     );
+    return (
+      typeof user.userId === "string" &&
+      typeof user.email === "string" &&
+      typeof payload.exp === "number" &&
+      payload.exp * 1000 > Date.now()
+    );
+  } catch {
+    return false;
+  }
 }
-
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setLoading] = useState(true);
+  const logout = useCallback(() => {
+    setUser(null);
+    localStorage.removeItem(KEY);
+    sessionStorage.removeItem("3dify:website-key");
+  }, []);
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (validSession(parsed)) setUser(parsed);
+        else localStorage.removeItem(KEY);
+      }
+    } catch {
+      localStorage.removeItem(KEY);
+    }
+    setLoading(false);
+    const expire = () => {
+      logout();
+      toast({
+        title: "Please sign in again",
+        description: "Your session has expired.",
+      });
+    };
+    const sync = (event: StorageEvent) => {
+      if (event.key === KEY) {
+        try {
+          const next = event.newValue ? JSON.parse(event.newValue) : null;
+          setUser(next && validSession(next) ? next : null);
+        } catch {
+          setUser(null);
+        }
+        sessionStorage.removeItem("3dify:website-key");
+      }
+    };
+    window.addEventListener("3dify:session-expired", expire);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener("3dify:session-expired", expire);
+      window.removeEventListener("storage", sync);
+    };
+  }, [logout]);
+  const login = useCallback(
+    (token: string, userId: string, email: string, isAdmin: boolean) => {
+      const next = { token, userId, email, isAdmin };
+      sessionStorage.removeItem("3dify:website-key");
+      setUser(next);
+      localStorage.setItem(KEY, JSON.stringify(next));
+    },
+    [],
+  );
+  return (
+    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
 export function useAuth() {
-    const ctx = useContext(AuthContext);
-    if (!ctx) throw new Error("useAuth must be used within AuthProvider");
-    return ctx;
+  const value = useContext(AuthContext);
+  if (!value) throw new Error("AuthProvider is required");
+  return value;
 }
