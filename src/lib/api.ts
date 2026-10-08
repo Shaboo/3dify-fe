@@ -45,7 +45,9 @@ export async function apiClient<T>(
   if (!res.ok) {
     const error = await res.json().catch(() => ({ message: res.statusText }));
     if (res.status === 401 && token)
-      window.dispatchEvent(new Event("3dify:session-expired"));
+      window.dispatchEvent(
+        new CustomEvent("3dify:session-expired", { detail: token }),
+      );
     throw new ApiError(
       error.message || `Request failed (${res.status})`,
       res.status,

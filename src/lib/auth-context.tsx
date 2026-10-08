@@ -5,6 +5,8 @@ import {
   useEffect,
   useState,
   useCallback,
+  Fragment,
+  useRef,
 } from "react";
 import { toast } from "@/components/ui/toaster";
 interface User {
@@ -45,6 +47,8 @@ function validSession(user: User) {
 }
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const userRef = useRef(user);
+  userRef.current = user;
   const [isLoading, setLoading] = useState(true);
   const logout = useCallback(() => {
     setUser(null);
@@ -63,7 +67,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem(KEY);
     }
     setLoading(false);
-    const expire = () => {
+    const expire = (event: Event) => {
+      if ((event as CustomEvent<string>).detail !== userRef.current?.token)
+        return;
       logout();
       toast({
         title: "Please sign in again",
@@ -99,7 +105,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
   return (
     <AuthContext.Provider value={{ user, isLoading, login, logout }}>
-      {children}
+      <Fragment key={user?.userId}>{children}</Fragment>
     </AuthContext.Provider>
   );
 }

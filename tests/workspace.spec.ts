@@ -42,6 +42,23 @@ function photos(count = 2) {
     buffer: png,
   }));
 }
+async function switchAccount(page: Page) {
+  const otherTab = await page.context().newPage();
+  await otherTab.goto(new URL("/", page.url()).href);
+  await otherTab.evaluate(
+    (user) => localStorage.setItem("omni3d_auth", JSON.stringify(user)),
+    {
+      ...account,
+      userId: "second-user",
+      email: "second@example.com",
+      token: `${token}2`,
+    },
+  );
+  await expect(
+    page.getByText("second@example.com", { exact: true }),
+  ).toBeAttached();
+  await otherTab.close();
+}
 async function setup(
   page: Page,
   {
@@ -390,4 +407,108 @@ test("registration leads to the generation workspace", async ({ page }) => {
   await expect(
     page.getByRole("heading", { name: "Photos into 3D." }),
   ).toBeVisible();
+});
+
+test("account switch clears photos and the previous account's pending task", async ({
+  page,
+}) => {
+  const state = await setup(page);
+  await page.goto("/dashboard");
+  await expect(page.getByText("Free active")).toBeVisible();
+  await page.getByLabel("Upload photos").setInputFiles(photos(1));
+  await page
+    .getByRole("button", { name: "Generate 3D model", exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: "Generation in progress" }),
+  ).toBeDisabled();
+  state.jobs = [];
+  await switchAccount(page);
+  await expect(page.getByText("Free active")).toBeVisible();
+  await expect(page.getByText(job.id, { exact: true })).toHaveCount(0);
+  await expect(page.getByAltText(/Selected photo/)).toHaveCount(0);
+  await page.getByLabel("Upload photos").setInputFiles(photos(1));
+  await expect(
+    page.getByRole("button", { name: "Generate 3D model", exact: true }),
+  ).toBeEnabled();
+  expect(
+    await page.evaluate(() => sessionStorage.getItem("3dify:website-key")),
+  ).toBeNull();
+  expect(
+    await page.evaluate(
+      () =>
+        JSON.parse(sessionStorage.getItem("3dify:pending:user-test")!).jobId,
+    ),
+  ).toBe(job.id);
+});
+
+test("a late API key response cannot submit or cache credentials after account switch", async ({
+  page,
+}) => {
+  const state = await setup(page);
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  let received!: () => void;
+  const started = new Promise<void>((resolve) => {
+    received = resolve;
+  });
+  await page.route("**/api/backend/dashboard/api-keys", async (route) => {
+    received();
+    await gate;
+    await route.fulfill({ json: { id: "old-key", key: "old-account-secret" } });
+  });
+  await page.goto("/dashboard");
+  await expect(page.getByText("Free active")).toBeVisible();
+  await page.getByLabel("Upload photos").setInputFiles(photos(1));
+  await page
+    .getByRole("button", { name: "Generate 3D model", exact: true })
+    .click();
+  await started;
+  await switchAccount(page);
+  const response = page.waitForResponse("**/api/backend/dashboard/api-keys");
+  release();
+  await (await response).finished();
+  await expect(page.getByText("Free active")).toBeVisible();
+  expect(
+    await page.evaluate(() => sessionStorage.getItem("3dify:website-key")),
+  ).toBeNull();
+  expect(state.submissions).toBe(0);
+});
+
+test("a late 401 from the previous account does not sign out the current account", async ({
+  page,
+}) => {
+  await setup(page);
+  let release!: () => void;
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  await page.route("**/api/backend/dashboard/jobs", async (route) => {
+    if (route.request().headers().authorization !== `Bearer ${token}`)
+      return route.fulfill({ json: [] });
+    await gate;
+    await route.fulfill({
+      status: 401,
+      json: { message: "Expired old session" },
+    });
+  });
+  await page.goto("/dashboard");
+  await expect(page.getByText("Free active")).toBeVisible();
+  await switchAccount(page);
+  const response = page.waitForResponse(
+    (response) =>
+      response.url().endsWith("/dashboard/jobs") && response.status() === 401,
+  );
+  release();
+  await (await response).finished();
+  await expect(
+    page.getByText("second@example.com", { exact: true }),
+  ).toBeAttached();
+  expect(
+    await page.evaluate(
+      () => JSON.parse(localStorage.getItem("omni3d_auth")!).userId,
+    ),
+  ).toBe("second-user");
 });

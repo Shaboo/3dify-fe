@@ -46,6 +46,13 @@ function Generate() {
   const [unknown, setUnknown] = useState(false);
   const [checkedUnknown, setCheckedUnknown] = useState(false);
   const submissionLock = useRef(false);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
   const pendingKey = `3dify:pending:${user?.userId}`;
   useEffect(() => {
     try {
@@ -189,6 +196,7 @@ function Generate() {
           "Website generation",
           subscription.planName || "free",
         );
+        if (!mounted.current) return;
         key = created.key;
         sessionStorage.setItem(
           KEY,
@@ -208,10 +216,12 @@ function Generate() {
         pendingKey,
         JSON.stringify({ jobId: response.jobId }),
       );
+      if (!mounted.current) return;
       setSubmitted(response.jobId);
       setSelected(response.jobId);
       refresh();
     } catch (error) {
+      if (!mounted.current) return;
       const ambiguous =
         sending && (!(error instanceof ApiError) || error.status >= 500);
       if (ambiguous) {
