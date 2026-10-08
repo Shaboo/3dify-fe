@@ -339,6 +339,26 @@ test("webhook can be saved and removed", async ({ page }) => {
   await page.getByRole("button", { name: "Remove webhook" }).click();
   await expect(page.getByText("No webhook configured.")).toBeVisible();
 });
+
+test("editing a zero-quota plan preserves zero when saving another field", async ({
+  page,
+}) => {
+  await setup(page, { admin: true });
+  let saved: any;
+  await page.route("**/api/backend/admin/plans**", async (route) => {
+    if (route.request().method() === "GET")
+      return route.fulfill({ json: [{ ...plan, monthlyQuota: 0 }] });
+    saved = route.request().postDataJSON();
+    await route.fulfill({ json: { ...plan, ...saved } });
+  });
+  await page.goto("/admin");
+  await page.getByRole("button", { name: "Edit", exact: true }).click();
+  await expect(page.getByLabel("Monthly job quota")).toHaveValue("0");
+  await page.getByLabel("Display name").fill("Renamed plan");
+  await page.getByRole("button", { name: "Save plan" }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  expect(saved).toMatchObject({ displayName: "Renamed plan", monthlyQuota: 0 });
+});
 test("key is shown once and can be revoked", async ({ page }) => {
   const state = await setup(page);
   await page.goto("/dashboard/keys");

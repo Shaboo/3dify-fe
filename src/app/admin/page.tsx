@@ -258,7 +258,7 @@ function Admin() {
                   {
                     name: "monthlyQuota",
                     label: "Monthly job quota",
-                    value: editing?.monthlyQuota || 100,
+                    value: editing?.monthlyQuota ?? 100,
                     min: 0,
                   },
                   {
