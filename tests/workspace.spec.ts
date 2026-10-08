@@ -619,3 +619,136 @@ test("job polling retries a temporary history error", async ({ page }) => {
   await expect(page.getByText("Temporary history outage")).toHaveCount(0);
   expect(reads).toBe(initialReads + 1);
 });
+
+for (const paid of [false, true]) {
+  test(`${paid ? "paid" : "free"} plan checkout sends correct URLs and recovers from failure`, async ({
+    page,
+  }) => {
+    await setup(page);
+    const selectedPlan = {
+      ...plan,
+      id: paid ? "paid-plan" : plan.id,
+      priceCents: paid ? 2500 : 0,
+    };
+    await page.route("**/api/backend/public/plans", (route) =>
+      route.fulfill({ json: [selectedPlan] }),
+    );
+    await page.route("https://billing.example.test/**", (route) =>
+      route.fulfill({ contentType: "text/html", body: "Mock checkout" }),
+    );
+    const requests: any[] = [];
+    await page.route(
+      "**/api/backend/dashboard/subscription/checkout",
+      async (route) => {
+        requests.push({
+          method: route.request().method(),
+          auth: route.request().headers().authorization,
+          body: route.request().postDataJSON(),
+        });
+        const origin = new URL(route.request().url()).origin;
+        await route.fulfill(
+          requests.length === 1
+            ? { status: 503, json: { message: "Checkout unavailable" } }
+            : {
+                json: {
+                  checkoutUrl: paid
+                    ? "https://billing.example.test/checkout/session"
+                    : `${origin}/subscribe/success`,
+                },
+              },
+        );
+      },
+    );
+    await page.goto("/subscribe");
+    const origin = new URL(page.url()).origin;
+    const button = page.getByRole("button", {
+      name: paid ? "Choose plan" : "Activate free plan",
+      exact: true,
+    });
+    await button.click();
+    await expect(
+      page.getByText("Checkout unavailable", { exact: true }),
+    ).toBeVisible();
+    await expect(button).toBeEnabled();
+    await button.click();
+    await expect(page).toHaveURL(
+      paid
+        ? "https://billing.example.test/checkout/session"
+        : `${origin}/subscribe/success`,
+    );
+    if (!paid)
+      await expect(
+        page.getByRole("heading", { name: "Your workspace is ready." }),
+      ).toBeVisible();
+    expect(requests).toEqual(
+      Array.from({ length: 2 }, () => ({
+        method: "POST",
+        auth: `Bearer ${token}`,
+        body: {
+          planId: selectedPlan.id,
+          successUrl: `${origin}/subscribe/success`,
+          cancelUrl: `${origin}/subscribe/cancel`,
+        },
+      })),
+    );
+  });
+}
+
+test("billing portal sends the return URL and recovers from failure", async ({
+  page,
+}) => {
+  await setup(page);
+  await page.route("**/api/backend/dashboard/subscription", (route) =>
+    route.fulfill({
+      json: {
+        isActive: true,
+        priceCents: 2500,
+        planName: "paid",
+        status: "active",
+      },
+    }),
+  );
+  await page.route("https://billing.example.test/**", (route) =>
+    route.fulfill({ contentType: "text/html", body: "Mock billing portal" }),
+  );
+  const requests: any[] = [];
+  await page.route(
+    "**/api/backend/dashboard/subscription/portal",
+    async (route) => {
+      requests.push({
+        method: route.request().method(),
+        auth: route.request().headers().authorization,
+        body: route.request().postDataJSON(),
+      });
+      await route.fulfill(
+        requests.length === 1
+          ? { status: 503, json: { message: "Portal unavailable" } }
+          : {
+              json: {
+                portalUrl: "https://billing.example.test/portal/session",
+              },
+            },
+      );
+    },
+  );
+  await page.goto("/dashboard/subscription");
+  const returnUrl = page.url();
+  const button = page.getByRole("button", {
+    name: "Manage billing",
+    exact: true,
+  });
+  await button.click();
+  await expect(page.getByRole("main").getByRole("alert")).toContainText(
+    "Portal unavailable",
+  );
+  await expect(button).toBeEnabled();
+  await button.click();
+  await expect(page).toHaveURL("https://billing.example.test/portal/session");
+  expect(requests).toEqual(
+    Array.from({ length: 2 }, () => ({
+      method: "POST",
+      auth: `Bearer ${token}`,
+      body: { returnUrl },
+    })),
+  );
+});
