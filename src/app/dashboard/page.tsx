@@ -514,7 +514,7 @@ function Generate() {
             <div className="empty">
               <h3>Your first model starts here.</h3>
               <p style={{ marginTop: 10 }}>
-                Choose photos on the left. Your task and downloads will appear
+                Choose photos to start. Your task and downloads will appear
                 here.
               </p>
             </div>

@@ -1,0 +1,158 @@
+[
+  {
+    "device": "desktop",
+    "name": "home",
+    "overflow": false,
+    "h1": "Your photos.Another dimension."
+  },
+  {
+    "device": "desktop",
+    "name": "login",
+    "overflow": false,
+    "h1": "From photosto somethingyou can turn."
+  },
+  {
+    "device": "desktop",
+    "name": "register",
+    "overflow": false,
+    "h1": "From photosto somethingyou can turn."
+  },
+  {
+    "device": "desktop",
+    "name": "docs",
+    "overflow": false,
+    "h1": "Build with 3dify."
+  },
+  {
+    "device": "desktop",
+    "name": "plans",
+    "overflow": false,
+    "h1": "A plan for your work."
+  },
+  {
+    "device": "desktop",
+    "name": "cancel",
+    "overflow": false,
+    "h1": "Checkout canceled."
+  },
+  {
+    "device": "desktop",
+    "name": "generate",
+    "overflow": false,
+    "h1": "Photos into 3D."
+  },
+  {
+    "device": "desktop",
+    "name": "jobs",
+    "overflow": false,
+    "h1": "Job history"
+  },
+  {
+    "device": "desktop",
+    "name": "keys",
+    "overflow": false,
+    "h1": "API keys"
+  },
+  {
+    "device": "desktop",
+    "name": "webhooks",
+    "overflow": false,
+    "h1": "Webhooks"
+  },
+  {
+    "device": "desktop",
+    "name": "subscription",
+    "overflow": false,
+    "h1": "Subscription"
+  },
+  {
+    "device": "desktop",
+    "name": "admin",
+    "overflow": false,
+    "h1": "Plan administration"
+  },
+  {
+    "device": "desktop",
+    "name": "success",
+    "overflow": false,
+    "h1": "Your workspace is ready."
+  },
+  {
+    "device": "mobile",
+    "name": "home",
+    "overflow": false,
+    "h1": "Your photos.Another dimension."
+  },
+  {
+    "device": "mobile",
+    "name": "login",
+    "overflow": false,
+    "h1": "From photosto somethingyou can turn."
+  },
+  {
+    "device": "mobile",
+    "name": "register",
+    "overflow": false,
+    "h1": "From photosto somethingyou can turn."
+  },
+  {
+    "device": "mobile",
+    "name": "docs",
+    "overflow": false,
+    "h1": "Build with 3dify."
+  },
+  {
+    "device": "mobile",
+    "name": "plans",
+    "overflow": false,
+    "h1": "A plan for your work."
+  },
+  {
+    "device": "mobile",
+    "name": "cancel",
+    "overflow": false,
+    "h1": "Checkout canceled."
+  },
+  {
+    "device": "mobile",
+    "name": "generate",
+    "overflow": false,
+    "h1": "Photos into 3D."
+  },
+  {
+    "device": "mobile",
+    "name": "jobs",
+    "overflow": false,
+    "h1": "Job history"
+  },
+  {
+    "device": "mobile",
+    "name": "keys",
+    "overflow": false,
+    "h1": "API keys"
+  },
+  {
+    "device": "mobile",
+    "name": "webhooks",
+    "overflow": false,
+    "h1": "Webhooks"
+  },
+  {
+    "device": "mobile",
+    "name": "subscription",
+    "overflow": false,
+    "h1": "Subscription"
+  },
+  {
+    "device": "mobile",
+    "name": "admin",
+    "overflow": false,
+    "h1": "Plan administration"
+  },
+  {
+    "device": "mobile",
+    "name": "success",
+    "overflow": false,
+    "h1": "Your workspace is ready."
+  }
+]

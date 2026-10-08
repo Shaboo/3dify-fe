@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import {
   Box,
   Images,
@@ -11,14 +11,23 @@ import {
   Settings,
   ArrowUpRight,
   Loader2,
+  Layers3,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 export function Header() {
   const { user, logout } = useAuth();
   return (
     <header className="header">
+      <a className="skip-link" href="#main-content">
+        Skip to content
+      </a>
       <Link href="/" className="brand" aria-label="3dify home">
-        <span className="brand-mark" aria-hidden="true" />
+        <Layers3
+          className="brand-mark"
+          size={28}
+          strokeWidth={1.7}
+          aria-hidden="true"
+        />
         3dify
       </Link>
       <nav className="header-nav" aria-label="Main navigation">
@@ -76,6 +85,14 @@ export function Workspace({
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const path = usePathname();
+  const navigationRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (window.matchMedia("(max-width: 700px)").matches) {
+      navigationRef.current
+        ?.querySelector<HTMLElement>('[aria-current="page"]')
+        ?.scrollIntoView({ block: "nearest", inline: "center" });
+    }
+  }, [path, user, isLoading]);
   useEffect(() => {
     if (!isLoading && !user) router.replace("/auth/login");
   }, [isLoading, user, router]);
@@ -99,7 +116,7 @@ export function Workspace({
       {isLoading || !user ? (
         <Loading />
       ) : admin && !user.isAdmin ? (
-        <main className="public-page">
+        <main id="main-content" className="public-page">
           <h1>Admin access required</h1>
           <p className="muted" style={{ marginTop: 20 }}>
             Your account has the user role.
@@ -111,7 +128,11 @@ export function Workspace({
       ) : (
         <div className="layout">
           <aside className="sidebar">
-            <nav aria-label="Workspace navigation">
+            <div className="sidebar-title">
+              <Box size={20} />
+              <span>Your studio</span>
+            </div>
+            <nav ref={navigationRef} aria-label="Workspace navigation">
               {items.map(({ href, label, icon: Icon }) => (
                 <Link
                   key={href}
@@ -124,12 +145,15 @@ export function Workspace({
                 </Link>
               ))}
             </nav>
+            <p className="nav-scroll-hint">Scroll for more tools</p>
             <div className="sidebar-bottom">
               <p>{user.email}</p>
               <p className="muted">{user.isAdmin ? "Administrator" : "User"}</p>
             </div>
           </aside>
-          <main className="workspace">{children}</main>
+          <main id="main-content" className="workspace">
+            {children}
+          </main>
         </div>
       )}
     </>

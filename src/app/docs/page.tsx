@@ -4,7 +4,11 @@ export default function Docs() {
   return (
     <>
       <Header />
-      <main className="public-page" style={{ maxWidth: 1150 }}>
+      <main
+        id="main-content"
+        className="public-page"
+        style={{ maxWidth: 1150 }}
+      >
         <PageTitle
           title="Build with 3dify."
           description="Submit photos, follow a task, and retrieve the generated model through the backend API."

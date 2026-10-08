@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { Header } from "@/components/shell";
@@ -42,7 +43,7 @@ export function AuthForm({ register = false }: { register?: boolean }) {
   return (
     <>
       <Header />
-      <main className="auth-layout">
+      <main id="main-content" className="auth-layout">
         <section className="auth-story">
           <div>
             <h1>
@@ -60,9 +61,17 @@ export function AuthForm({ register = false }: { register?: boolean }) {
               place.
             </p>
           </div>
-          <span className="section-number" aria-hidden="true">
-            {register ? "01" : "02"}
-          </span>
+          <div className="auth-art">
+            <Image
+              src="/images/contact-chair.webp"
+              alt="Illustrative chrome and lilac chair"
+              loading="eager"
+              width={768}
+              height={512}
+              sizes="(max-width: 700px) 100vw, 50vw"
+            />
+            <span>Illustrative object study</span>
+          </div>
         </section>
         <section className="auth-form">
           <h2>{register ? "Create an account" : "Welcome back"}</h2>

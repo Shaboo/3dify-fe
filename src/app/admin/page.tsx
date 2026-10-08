@@ -114,59 +114,69 @@ function Admin() {
       {loading ? (
         <p role="status">Loading plans…</p>
       ) : (
-        <div className="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Plan</th>
-                <th>Price / month</th>
-                <th>Requests / minute</th>
-                <th>Monthly quota</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {plans.map((plan) => (
-                <tr key={plan.id}>
-                  <td>
-                    <strong>{plan.displayName || plan.name}</strong>
-                    <p className="muted">{plan.name}</p>
-                  </td>
-                  <td>{formatPrice(plan.priceCents, plan.currency)}</td>
-                  <td>{plan.rateLimitRpm}</td>
-                  <td>{plan.monthlyQuota.toLocaleString()}</td>
-                  <td>
-                    <span className="status">
-                      {plan.isActive ? "Active" : "Inactive"}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="row">
-                      <button
-                        className="btn secondary small"
-                        onClick={() => {
-                          setEditing(plan);
-                          setOpen(true);
-                          setError("");
-                        }}
-                      >
-                        Edit
-                      </button>
-                      {plan.isActive && (
+        <div>
+          <p className="table-scroll-hint">
+            Scroll horizontally to see all plan actions.
+          </p>
+          <div
+            className="table-wrap"
+            tabIndex={0}
+            role="region"
+            aria-label="Plans and management actions"
+          >
+            <table>
+              <thead>
+                <tr>
+                  <th>Plan</th>
+                  <th>Price / month</th>
+                  <th>Requests / minute</th>
+                  <th>Monthly quota</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {plans.map((plan) => (
+                  <tr key={plan.id}>
+                    <td>
+                      <strong>{plan.displayName || plan.name}</strong>
+                      <p className="muted">{plan.name}</p>
+                    </td>
+                    <td>{formatPrice(plan.priceCents, plan.currency)}</td>
+                    <td>{plan.rateLimitRpm}</td>
+                    <td>{plan.monthlyQuota.toLocaleString()}</td>
+                    <td>
+                      <span className="status">
+                        {plan.isActive ? "Active" : "Inactive"}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="row">
                         <button
                           className="btn secondary small"
-                          onClick={() => setDeactivating(plan)}
+                          onClick={() => {
+                            setEditing(plan);
+                            setOpen(true);
+                            setError("");
+                          }}
                         >
-                          Deactivate
+                          Edit
                         </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                        {plan.isActive && (
+                          <button
+                            className="btn secondary small"
+                            onClick={() => setDeactivating(plan)}
+                          >
+                            Deactivate
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
       <Dialog.Root

@@ -12,7 +12,7 @@ All use branch `main`. These handovers are persistent repository context, not au
 
 ## Design and implementation
 
-Frontend-design skill anchor: **Swiss**. Pure white and `#F7F7F8` surfaces, Helvetica Neue/Helvetica, single Yves Klein Blue accent `#002FA7`, hairline grid, asymmetric left-aligned typography. Numbered photo previews are the signature visual element. Replaced dark purple gradients/glass styling across landing, login/register, generation, job history, keys, webhooks, subscription, plan catalog, admin editor and API docs. Do not invent telemetry, metrics or plan features.
+Design direction: **The Photographic Contact-Sheet Archive**. Lilac grounds, plum framing, bright yellow actions, and self-hosted Archivo replace the previous Swiss blue/white system across public, authentication, generation, account, plans, admin, and documentation screens. A labeled illustrative chair study with a contact-detail inset anchors the landing; quiet panels and a responsive plum sidebar carry the same palette into working screens. Root `DESIGN.md` records the shipped CSS tokens; `.impeccable/design.json` carries component previews and extensions. Do not invent telemetry, metrics, plan features, or successful generation examples.
 
 Next.js 16.4.0 / React 19 with pinned lockfile; obsolete Tailwind and unused component dependencies removed. Read `AGENTS.md` and version-matched Next docs in `node_modules/next/dist/docs` before code changes. Docker uses Node 24 and `npm ci`. `.env.example` contains only the server-side backend URL.
 
@@ -45,8 +45,14 @@ npm run build
 npm run test:browser
 ```
 
-Validated: TypeScript, production build, **24 desktop/mobile browser and proxy checks**, zero npm production vulnerabilities. Proxy tests send a >10 MB multipart request only to an isolated fixture, assert fixture identity before POST, and refuse existing server reuse. Browser coverage includes registration, free activation, 1/4-photo submission, polling/downloads, backend errors, uncertain submission/reload, admin denial/editing, keys and webhooks. No paid Meshy generation was submitted by the agent; live provider success is still for the user to verify.
+Validated: TypeScript, production build, **26 desktop/mobile browser and proxy checks**, zero npm production vulnerabilities. Proxy tests send a >10 MB multipart request only to an isolated fixture, assert fixture identity before POST, and refuse existing server reuse. Browser coverage includes registration, free activation, 1/4-photo submission, polling/downloads, backend errors, uncertain submission/reload, admin denial/editing, keys and webhooks. No paid Meshy generation was submitted by the agent; live provider success is still for the user to verify.
 
 Website and backend were started for user testing. Home and real public-plan proxy returned 200; backend health UP. Check ports before starting duplicates. Source was prepared in `/private/tmp/3dify-fe-redesign` and installed with filesystem approval; replaced files backed up in `/private/tmp/3dify-fe-backup-20261007-223910`. Runtime/cache/env files are ignored; no credentials were replaced.
 
 Next: user submits a real task and checks provider outcome through the website. Inspect task ID and backend logs if it fails. The two existing Shopify jobs are not proof of a completed standalone website generation. No deployment was requested.
+
+## Redesign record — 2026-10-07
+
+The photographic direction preserves the 3dify name and existing functionality. `public/images/contact-chair.webp` is generated illustrative artwork, reused on landing and authentication; its exact prompt and creation timestamp are recorded in `public/images/contact-chair.webp.json`, with the source raster in `.impeccable/contact-chair-source.png`. It is not evidence of a successful provider generation. Archivo is served locally from `public/fonts/archivo-variable.ttf`; its OFL license is retained in `public/fonts/OFL.txt`. The landing detail toggle changes the artwork crop and exposes its pressed state.
+
+The initial finish review inspected 26 supplied desktop/mobile renders and returned **Fix**. The implementation now contains the requested documentation overflow constraint, active mobile navigation visibility and scroll hint, discoverable administration table scrolling, and two copy repairs. Updated captures resolved all five listed findings; `.impeccable/review/verdict.md` returns **Ship for the reviewed visual redesign scope**. This was a targeted recheck of the listed fixes, not a new whole-review pass. Final inspection reports zero document overflow across all 26 desktop/mobile captures, and the production build plus all 26 browser/proxy checks passed. Review evidence and limitations are retained in `.impeccable/review/finish-review.md` and `.impeccable/review/verdict.md`. Backend contracts and the live-provider verification limitations above remain unchanged.

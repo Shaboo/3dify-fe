@@ -1,0 +1,338 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-07T21:49:48.851237+00:00",
+  "title": "Design System: 3dify",
+  "extensions": {
+    "colorMeta": {
+      "blue": {
+        "displayName": "Blue",
+        "role": "secondary",
+        "tonalRamp": [
+          "oklch(15% 0.09 300)",
+          "oklch(26% 0.09 300)",
+          "oklch(37% 0.09 300)",
+          "oklch(48% 0.09 300)",
+          "oklch(59% 0.09 300)",
+          "oklch(70% 0.09 300)",
+          "oklch(81% 0.09 300)",
+          "oklch(95% 0.09 300)"
+        ]
+      },
+      "ink": {
+        "displayName": "Ink",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.025 300)",
+          "oklch(26% 0.025 300)",
+          "oklch(37% 0.025 300)",
+          "oklch(48% 0.025 300)",
+          "oklch(59% 0.025 300)",
+          "oklch(70% 0.025 300)",
+          "oklch(81% 0.025 300)",
+          "oklch(95% 0.025 300)"
+        ]
+      },
+      "muted": {
+        "displayName": "Muted",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.025 300)",
+          "oklch(26% 0.025 300)",
+          "oklch(37% 0.025 300)",
+          "oklch(48% 0.025 300)",
+          "oklch(59% 0.025 300)",
+          "oklch(70% 0.025 300)",
+          "oklch(81% 0.025 300)",
+          "oklch(95% 0.025 300)"
+        ]
+      },
+      "line": {
+        "displayName": "Line",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.025 300)",
+          "oklch(26% 0.025 300)",
+          "oklch(37% 0.025 300)",
+          "oklch(48% 0.025 300)",
+          "oklch(59% 0.025 300)",
+          "oklch(70% 0.025 300)",
+          "oklch(81% 0.025 300)",
+          "oklch(95% 0.025 300)"
+        ]
+      },
+      "surface": {
+        "displayName": "Surface",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.025 300)",
+          "oklch(26% 0.025 300)",
+          "oklch(37% 0.025 300)",
+          "oklch(48% 0.025 300)",
+          "oklch(59% 0.025 300)",
+          "oklch(70% 0.025 300)",
+          "oklch(81% 0.025 300)",
+          "oklch(95% 0.025 300)"
+        ]
+      },
+      "canvas": {
+        "displayName": "Canvas",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.025 300)",
+          "oklch(26% 0.025 300)",
+          "oklch(37% 0.025 300)",
+          "oklch(48% 0.025 300)",
+          "oklch(59% 0.025 300)",
+          "oklch(70% 0.025 300)",
+          "oklch(81% 0.025 300)",
+          "oklch(95% 0.025 300)"
+        ]
+      },
+      "plum": {
+        "displayName": "Plum",
+        "role": "primary",
+        "tonalRamp": [
+          "oklch(15% 0.025 300)",
+          "oklch(26% 0.025 300)",
+          "oklch(37% 0.025 300)",
+          "oklch(48% 0.025 300)",
+          "oklch(59% 0.025 300)",
+          "oklch(70% 0.025 300)",
+          "oklch(81% 0.025 300)",
+          "oklch(95% 0.025 300)"
+        ]
+      },
+      "lilac": {
+        "displayName": "Lilac",
+        "role": "secondary",
+        "tonalRamp": [
+          "oklch(15% 0.025 300)",
+          "oklch(26% 0.025 300)",
+          "oklch(37% 0.025 300)",
+          "oklch(48% 0.025 300)",
+          "oklch(59% 0.025 300)",
+          "oklch(70% 0.025 300)",
+          "oklch(81% 0.025 300)",
+          "oklch(95% 0.025 300)"
+        ]
+      },
+      "yellow": {
+        "displayName": "Yellow",
+        "role": "primary",
+        "tonalRamp": [
+          "oklch(15% 0.09 80)",
+          "oklch(26% 0.09 80)",
+          "oklch(37% 0.09 80)",
+          "oklch(48% 0.09 80)",
+          "oklch(59% 0.09 80)",
+          "oklch(70% 0.09 80)",
+          "oklch(81% 0.09 80)",
+          "oklch(95% 0.09 80)"
+        ]
+      },
+      "danger": {
+        "displayName": "Danger",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.09 350)",
+          "oklch(26% 0.09 350)",
+          "oklch(37% 0.09 350)",
+          "oklch(48% 0.09 350)",
+          "oklch(59% 0.09 350)",
+          "oklch(70% 0.09 350)",
+          "oklch(81% 0.09 350)",
+          "oklch(95% 0.09 350)"
+        ]
+      },
+      "white": {
+        "displayName": "White",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.025 300)",
+          "oklch(26% 0.025 300)",
+          "oklch(37% 0.025 300)",
+          "oklch(48% 0.025 300)",
+          "oklch(59% 0.025 300)",
+          "oklch(70% 0.025 300)",
+          "oklch(81% 0.025 300)",
+          "oklch(95% 0.025 300)"
+        ]
+      },
+      "action-hover": {
+        "displayName": "Action Hover",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.09 80)",
+          "oklch(26% 0.09 80)",
+          "oklch(37% 0.09 80)",
+          "oklch(48% 0.09 80)",
+          "oklch(59% 0.09 80)",
+          "oklch(70% 0.09 80)",
+          "oklch(81% 0.09 80)",
+          "oklch(95% 0.09 80)"
+        ]
+      },
+      "plum-hover": {
+        "displayName": "Plum Hover",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.025 300)",
+          "oklch(26% 0.025 300)",
+          "oklch(37% 0.025 300)",
+          "oklch(48% 0.025 300)",
+          "oklch(59% 0.025 300)",
+          "oklch(70% 0.025 300)",
+          "oklch(81% 0.025 300)",
+          "oklch(95% 0.025 300)"
+        ]
+      },
+      "field-border": {
+        "displayName": "Field Border",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.025 300)",
+          "oklch(26% 0.025 300)",
+          "oklch(37% 0.025 300)",
+          "oklch(48% 0.025 300)",
+          "oklch(59% 0.025 300)",
+          "oklch(70% 0.025 300)",
+          "oklch(81% 0.025 300)",
+          "oklch(95% 0.025 300)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Landing display",
+        "purpose": "Large public headline."
+      }
+    },
+    "shadows": [
+      {
+        "name": "toast",
+        "value": "0 8px 32px #30233e26",
+        "purpose": "Transient feedback."
+      },
+      {
+        "name": "dialog",
+        "value": "0 16px 64px #30233e40",
+        "purpose": "Modal interruption."
+      }
+    ],
+    "motion": [
+      {
+        "name": "control-transition",
+        "value": "0.18s",
+        "purpose": "Background and color transitions."
+      },
+      {
+        "name": "image-detail",
+        "value": "0.8s cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Illustrative crop transition, suppressed for reduced motion."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "wide",
+        "value": "1800px"
+      },
+      {
+        "name": "workspace",
+        "value": "1200px"
+      },
+      {
+        "name": "public-stack",
+        "value": "900px"
+      },
+      {
+        "name": "mobile",
+        "value": "700px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary action",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Shared action control.",
+      "html": "<button class=\"ds-btn-primary\">Open the workspace</button>",
+      "css": ".ds-btn-primary{display:inline-flex;align-items:center;justify-content:space-between;gap:24px;min-height:48px;padding:12px 20px;border:1px solid transparent;border-radius:9px;font-family:Archivo,sans-serif;font-size:15px;font-weight:550;transition:background .18s,color .18s;cursor:pointer;background:var(--yellow);color:var(--plum);}.ds-btn-primary:hover{background:#d5e87b;}.ds-btn-primary:focus-visible{outline:3px solid var(--blue);outline-offset:4px;}.ds-btn-primary:disabled{opacity:.5;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-btn-primary{transition:none;}}"
+    },
+    {
+      "name": "Secondary action",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Shared action control.",
+      "html": "<button class=\"ds-btn-secondary\">Open the workspace</button>",
+      "css": ".ds-btn-secondary{display:inline-flex;align-items:center;justify-content:space-between;gap:24px;min-height:48px;padding:12px 20px;border:1px solid transparent;border-radius:9px;font-family:Archivo,sans-serif;font-size:15px;font-weight:550;transition:background .18s,color .18s;cursor:pointer;background:transparent;color:var(--ink);border-color:var(--line);}.ds-btn-secondary:hover{background:var(--surface);}.ds-btn-secondary:focus-visible{outline:3px solid var(--blue);outline-offset:4px;}.ds-btn-secondary:disabled{opacity:.5;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-btn-secondary{transition:none;}}"
+    },
+    {
+      "name": "Inverse action",
+      "kind": "button",
+      "refersTo": "button-plum",
+      "description": "Shared action control.",
+      "html": "<button class=\"ds-btn-plum\">Open the workspace</button>",
+      "css": ".ds-btn-plum{display:inline-flex;align-items:center;justify-content:space-between;gap:24px;min-height:48px;padding:12px 20px;border:1px solid transparent;border-radius:9px;font-family:Archivo,sans-serif;font-size:15px;font-weight:550;transition:background .18s,color .18s;cursor:pointer;background:var(--plum);color:var(--yellow);}.ds-btn-plum:hover{background:#4e3b60;}.ds-btn-plum:focus-visible{outline:3px solid var(--blue);outline-offset:4px;}.ds-btn-plum:disabled{opacity:.5;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-btn-plum{transition:none;}}"
+    },
+    {
+      "name": "Text field",
+      "kind": "input",
+      "refersTo": "field",
+      "description": "Labeled working field.",
+      "html": "<label class=\"ds-field\">Email<input type=\"email\" placeholder=\"you@example.com\"></label>",
+      "css": ".ds-field{display:grid;gap:8px;font:500 14px Archivo,sans-serif;color:var(--ink)}.ds-field input{font:15px/1.6 Archivo,sans-serif;background:var(--canvas);color:var(--ink);border:1px solid #cfc3da;border-radius:8px;padding:12px 14px;min-width:0}.ds-field input::placeholder{color:var(--muted);opacity:1}.ds-field input:focus{border-color:var(--blue)}.ds-field input:focus-visible{outline:3px solid var(--blue);outline-offset:4px;}"
+    },
+    {
+      "name": "Workspace navigation",
+      "kind": "nav",
+      "refersTo": "navigation-active",
+      "description": "Plum navigation with an explicit current page.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Workspace\"><a href=\"#\" aria-current=\"page\">Generate</a><a href=\"#\">Job history</a></nav>",
+      "css": ".ds-nav{display:grid;gap:6px;padding:20px;background:var(--plum);font:14px/1.6 Archivo,sans-serif}.ds-nav a{display:flex;padding:13px 12px;border-radius:9px;color:#d0c4de;text-decoration:none}.ds-nav a[aria-current]{background:var(--yellow);color:var(--plum);font-weight:550}.ds-nav a:not([aria-current]):hover{background:#443551;color:#fff}.ds-nav a:focus-visible{outline:3px solid var(--yellow);outline-offset:4px}"
+    },
+    {
+      "name": "Status pill",
+      "kind": "chip",
+      "refersTo": "status",
+      "description": "Textual task state with compact numeric rhythm.",
+      "html": "<span class=\"ds-status\">Pending</span>",
+      "css": ".ds-status{display:inline-flex;align-items:center;gap:7px;font:12px/1.6 Archivo,sans-serif;font-variant-numeric:tabular-nums;color:var(--muted);padding:5px 10px;border:1px solid var(--line);border-radius:20px}"
+    },
+    {
+      "name": "Working panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Flat bordered operational container.",
+      "html": "<section class=\"ds-panel\"><h2>API keys</h2><p>Manage your access.</p></section>",
+      "css": ".ds-panel{padding:28px;border:1px solid var(--line);border-radius:var(--radius);background:#fff;color:var(--ink);font:15px/1.6 Archivo,sans-serif}.ds-panel h2{margin:0 0 12px;font-size:24px;font-weight:550;line-height:1.2;letter-spacing:-.03em}.ds-panel p{margin:0;color:var(--muted)}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Photographic Contact-Sheet Archive",
+    "overview": "The Photographic Contact-Sheet Archive makes photos feel like tangible material. Lilac grounds, plum framing, and yellow actions give 3dify an expressive public face while its workspace stays quiet and legible.\n\nArchivo carries both large, tightly set headlines and compact working controls. Ordered captions, restrained borders, and rounded photographic containers connect public pages, authentication, plans, and account tools. Illustrative artwork is always distinguished from actual generated output.",
+    "keyCharacteristics": [
+      "Photographic material and explicit captions.",
+      "Lilac surfaces, plum framing, yellow actions.",
+      "Large Archivo headlines with compact working controls."
+    ],
+    "rules": [
+      {
+        "name": "The Truthful Image Rule",
+        "body": "Illustrative artwork must remain labeled as illustrative and must not imply a verified generated output.",
+        "section": "colors"
+      }
+    ],
+    "dos": [
+      "Do label illustrative artwork and preserve its provenance.",
+      "Do keep selected navigation and keyboard focus visible on narrow screens.",
+      "Do use quiet surfaces and tabular numerals for working data.",
+      "Do honor reduced-motion preferences."
+    ],
+    "donts": [
+      "Don't present the chair artwork as a verified generation result.",
+      "Don't invent status, usage metrics, testimonials, or plan features.",
+      "Don't make the landing image treatment mandatory on every working screen."
+    ]
+  }
+}

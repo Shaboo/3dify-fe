@@ -33,7 +33,7 @@ export default function Success() {
   return (
     <>
       <Header />
-      <main className="public-page">
+      <main id="main-content" className="public-page">
         <PageTitle
           title={
             active ? "Your workspace is ready." : "Checking your subscription."

@@ -4,7 +4,7 @@ export default function Cancel() {
   return (
     <>
       <Header />
-      <main className="public-page">
+      <main id="main-content" className="public-page">
         <PageTitle
           title="Checkout canceled."
           description="You can return to the plans page or continue in your workspace."

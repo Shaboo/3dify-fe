@@ -79,13 +79,10 @@ export function Plans() {
         <p role="status">Loading plans…</p>
       ) : plans.length ? (
         <div className="plans-grid">
-          {plans.map((plan, index) => (
+          {plans.map((plan) => (
             <section className="plan-card" key={plan.id}>
               <div className="row" style={{ justifyContent: "space-between" }}>
                 <h2>{plan.displayName || plan.name}</h2>
-                <span className="photo-num">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
               </div>
               {plan.description && <p className="muted">{plan.description}</p>}
               <div>
