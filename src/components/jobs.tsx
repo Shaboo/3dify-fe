@@ -196,7 +196,7 @@ export function JobList({
     </div>
   );
 }
-export function useJobs(token?: string) {
+export function useJobs(token?: string, awaitingJobId?: string | null) {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -206,8 +206,12 @@ export function useJobs(token?: string) {
     let alive = true;
     let timer: ReturnType<typeof setTimeout>;
     async function load() {
+      let poll = true;
       try {
         const next = await jobsApi.list(token!);
+        poll =
+          next.some((job) => ["PENDING", "PROCESSING"].includes(job.status)) ||
+          (!!awaitingJobId && !next.some((job) => job.id === awaitingJobId));
         if (alive) {
           setJobs(
             next.sort(
@@ -221,7 +225,7 @@ export function useJobs(token?: string) {
       } finally {
         if (alive) {
           setLoading(false);
-          timer = setTimeout(load, 8000);
+          if (poll) timer = setTimeout(load, 8000);
         }
       }
     }
@@ -230,7 +234,7 @@ export function useJobs(token?: string) {
       alive = false;
       clearTimeout(timer);
     };
-  }, [token, revision]);
+  }, [token, revision, awaitingJobId]);
   return {
     jobs,
     error,

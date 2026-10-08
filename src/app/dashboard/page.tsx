@@ -21,12 +21,13 @@ const KEY = "3dify:website-key";
 function Generate() {
   const { user } = useAuth();
   const token = user?.token;
+  const [submitted, setSubmitted] = useState<string | null>(null);
   const {
     jobs,
     error: jobsError,
     loading: jobsLoading,
     refresh,
-  } = useJobs(token);
+  } = useJobs(token, submitted);
   const [options, setOptions] = useState<GenerationOptions | null>(null);
   const [subscription, setSubscription] = useState<SubscriptionStatus | null>(
     null,
@@ -42,7 +43,6 @@ function Generate() {
   const [activating, setActivating] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
-  const [submitted, setSubmitted] = useState<string | null>(null);
   const [unknown, setUnknown] = useState(false);
   const [checkedUnknown, setCheckedUnknown] = useState(false);
   const submissionLock = useRef(false);

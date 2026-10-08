@@ -85,6 +85,7 @@ async function setup(
     webhook: null as any,
     adminReads: 0,
     planSaves: 0,
+    jobReads: 0,
   };
   if (signedIn)
     await page.addInitScript(
@@ -154,7 +155,10 @@ async function setup(
       if (failSubmit) return reply({ message: "Response timed out" }, 504);
       return reply({ jobId: job.id, status: "PENDING" }, 202);
     }
-    if (path === "/dashboard/jobs") return reply(state.jobs);
+    if (path === "/dashboard/jobs") {
+      state.jobReads++;
+      return reply(state.jobs);
+    }
     if (path.endsWith("/history"))
       return reply([
         {
@@ -531,4 +535,87 @@ test("a late 401 from the previous account does not sign out the current account
       () => JSON.parse(localStorage.getItem("omni3d_auth")!).userId,
     ),
   ).toBe("second-user");
+});
+
+test("job polling stops after completion and manual refresh still works", async ({
+  page,
+}) => {
+  const state = await setup(page);
+  state.jobs = [{ ...job }];
+  await page.clock.install();
+  await page.goto("/dashboard/jobs");
+  await expect(
+    page.getByRole("button", { name: new RegExp(job.id) }),
+  ).toContainText("Queued");
+  const initialReads = state.jobReads;
+  state.jobs[0].status = "PROCESSING";
+  await page.clock.fastForward(8000);
+  await expect(
+    page.getByRole("button", { name: new RegExp(job.id) }),
+  ).toContainText("Generating");
+  expect(state.jobReads).toBe(initialReads + 1);
+  state.jobs[0].status = "SUCCESS";
+  await page.clock.fastForward(8000);
+  await expect(
+    page.getByRole("button", { name: new RegExp(job.id) }),
+  ).toContainText("Ready");
+  expect(state.jobReads).toBe(initialReads + 2);
+  await page.clock.fastForward(24000);
+  expect(state.jobReads).toBe(initialReads + 2);
+  await page.getByRole("button", { name: "Refresh", exact: true }).click();
+  await expect.poll(() => state.jobReads).toBe(initialReads + 3);
+});
+
+test("an accepted job keeps polling until it appears in history", async ({
+  page,
+}) => {
+  const state = await setup(page);
+  let visible = false;
+  await page.route("**/api/backend/dashboard/jobs", async (route) => {
+    state.jobReads++;
+    await route.fulfill({ json: visible ? state.jobs : [] });
+  });
+  await page.clock.install();
+  await page.goto("/dashboard");
+  await expect(page.getByText("Free active")).toBeVisible();
+  await expect(page.getByText("Your first model starts here.")).toBeVisible();
+  const initialReads = state.jobReads;
+  await page.clock.fastForward(16000);
+  expect(state.jobReads).toBe(initialReads);
+  await page.getByLabel("Upload photos").setInputFiles(photos(1));
+  await page
+    .getByRole("button", { name: "Generate 3D model", exact: true })
+    .click();
+  await expect(
+    page.getByText("Task accepted. Waiting for its first update."),
+  ).toBeVisible();
+  await expect.poll(() => state.jobReads).toBe(initialReads + 1);
+  visible = true;
+  await page.clock.fastForward(8000);
+  await expect(
+    page.getByRole("button", { name: new RegExp(job.id) }),
+  ).toBeVisible();
+  expect(state.jobReads).toBe(initialReads + 2);
+});
+
+test("job polling retries a temporary history error", async ({ page }) => {
+  await setup(page);
+  let reads = 0;
+  let failing = true;
+  await page.route("**/api/backend/dashboard/jobs", async (route) => {
+    reads++;
+    await route.fulfill(
+      failing
+        ? { status: 503, json: { message: "Temporary history outage" } }
+        : { json: [] },
+    );
+  });
+  await page.clock.install();
+  await page.goto("/dashboard/jobs");
+  await expect(page.getByText("Temporary history outage")).toBeVisible();
+  const initialReads = reads;
+  failing = false;
+  await page.clock.fastForward(8000);
+  await expect(page.getByText("Temporary history outage")).toHaveCount(0);
+  expect(reads).toBe(initialReads + 1);
 });
