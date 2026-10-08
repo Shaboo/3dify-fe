@@ -13,7 +13,7 @@ No Shopify tunnel, origin configuration, or Shopify billing is needed. The free 
 
 ## Configuration
 
-Set server-side `BACKEND_URL` to override http://localhost:8080. See `.env.example`. The Next.js route handler proxies requests through `/api/backend`; credentials are never added to public environment variables. Its upstream timeout is four minutes to accommodate photo uploads. Photo count comes from `/dashboard/generation-options` rather than hard-coded provider limits.
+Set server-side `BACKEND_URL` to override http://localhost:8080. See `.env.example`. The Next.js route handler proxies requests through `/api/backend`; credentials are never added to public environment variables. It limits each request body to 85 MiB, including multipart framing, and applies a four-minute timeout to uploads and upstream requests. Photo count comes from `/dashboard/generation-options` rather than hard-coded provider limits.
 
 The existing localStorage login key (`omni3d_auth`) is preserved. JWT expiry is checked on load; expired backend sessions return to sign-in. Website generation creates an API key for the signed-in account as needed and keeps its raw value in tab-scoped sessionStorage. Sign-out clears it; the key can be revoked on the API keys page. Accounts and existing jobs are retained. Admin accounts see the Admin plan editor; the backend also enforces the role.
 

@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+const MAX_BODY_BYTES = 85 * 1024 * 1024;
 async function proxy(
   request: NextRequest,
   { params }: { params: Promise<{ path: string[] }> },
@@ -16,10 +17,41 @@ async function proxy(
     if (value) headers.set(name, value);
   }
   try {
-    const body =
-      request.method === "GET" || request.method === "HEAD"
-        ? undefined
-        : await request.arrayBuffer();
+    const signal = AbortSignal.any([
+      request.signal,
+      AbortSignal.timeout(240000),
+    ]);
+    let body: Buffer<ArrayBuffer> | undefined;
+    if (request.body && request.method !== "GET" && request.method !== "HEAD") {
+      const reader = request.body.getReader();
+      const abort = () => {
+        void reader.cancel().catch(() => {});
+      };
+      signal.addEventListener("abort", abort, { once: true });
+      const chunks: Uint8Array[] = [];
+      let size = 0;
+      try {
+        while (true) {
+          signal.throwIfAborted();
+          const { done, value } = await reader.read();
+          signal.throwIfAborted();
+          if (done) break;
+          size += value.byteLength;
+          if (size > MAX_BODY_BYTES) {
+            await reader.cancel();
+            return Response.json(
+              { message: "Upload exceeds the 85 MB request limit." },
+              { status: 413 },
+            );
+          }
+          chunks.push(value);
+        }
+        body = Buffer.concat(chunks, size);
+      } finally {
+        signal.removeEventListener("abort", abort);
+        reader.releaseLock();
+      }
+    }
     const response = await fetch(
       `${backend.replace(/\/$/, "")}/${path}${request.nextUrl.search}`,
       {
@@ -28,7 +60,7 @@ async function proxy(
         body,
         cache: "no-store",
         redirect: "manual",
-        signal: AbortSignal.timeout(240000),
+        signal,
       },
     );
     return new Response(response.body, {
